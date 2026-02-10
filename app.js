@@ -11,6 +11,15 @@
     }
 })();
 
+// Register Service Worker for audio caching
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+        console.log('✅ Service Worker registered for caching', reg);
+    }).catch((err) => {
+        console.warn('Service Worker registration failed:', err);
+    });
+}
+
 async function safePlay() {
     try {
         await musicPlayer.play();
@@ -164,11 +173,18 @@ async function loadPlaylistFromDirectory() {
             const jresp2 = await fetch('music/playlist.json');
             if (jresp2.ok) {
                 const manifest = await jresp2.json();
-                playlist = manifest.map(item => ({
-                    title: item.title || item.name || item.src.replace(/\.[^/.]+$/, ''),
-                    artist: item.artist || 'Unknown',
-                    src: item.src.startsWith('music/') ? item.src : `music/${item.src}`
-                }));
+                playlist = manifest.map(item => {
+                    let src = item.src || '';
+                    // if src is an absolute URL (http/https or //), leave as-is
+                    if (!/^https?:\/\//i.test(src) && !src.startsWith('//')) {
+                        if (!src.startsWith('music/')) src = `music/${src}`;
+                    }
+                    return {
+                        title: item.title || item.name || src.replace(/\.[^/.]+$/, ''),
+                        artist: item.artist || 'Unknown',
+                        src
+                    };
+                });
             } else {
                 playlist = uniqueFiles.map(fn => {
                     const name = fn.replace(/\.[^/.]+$/, '');
@@ -578,7 +594,17 @@ musicPlayer.addEventListener('loadedmetadata', () => {
 });
 
 musicPlayer.addEventListener('error', (e) => {
-    console.error('Audio error:', e);
+    const err = e.target.error;
+    let msg = 'Unknown audio error';
+    if (err) {
+        msg = `Audio error code ${err.code}: `;
+        if (err.code === 1) msg += 'MEDIA_ERR_ABORTED';
+        else if (err.code === 2) msg += 'MEDIA_ERR_NETWORK (Network issue / CORS / unreachable)';
+        else if (err.code === 3) msg += 'MEDIA_ERR_DECODE (Invalid audio format or corrupted)';
+        else if (err.code === 4) msg += 'MEDIA_ERR_SRC_NOT_SUPPORTED (Format not supported or URL invalid)';
+    }
+    console.error(msg, 'src:', musicPlayer.src);
+    showToast('Audio error: ' + msg, 5000);
 });
 
 // // Auto-advance to next song (single listener)
