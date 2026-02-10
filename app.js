@@ -124,50 +124,28 @@ try { progressBar.disabled = true; } catch (e) {}
 // Playlist will be discovered by fetching the server directory listing at /music/
 let playlist = [];
 
-async function loadPlaylistFromDirectory() {
-    try {
-        const resp = await fetch('music/');
-        if (!resp.ok) throw new Error('Could not fetch music/ directory listing');
-        const html = await resp.text();
+async function loadPlaylistFromJson() {
+  try {
+    const resp = await fetch('./music/playlist.json', { cache: 'no-store' });
+    if (!resp.ok) throw new Error('Could not fetch music/playlist.json');
+    playlist = await resp.json();
 
-        // Parse the HTML directory listing and extract file hrefs
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const anchors = Array.from(doc.querySelectorAll('a'));
-        const files = anchors
-            .map(a => a.getAttribute('href'))
-            .filter(Boolean)
-            .map(h => decodeURIComponent(h.split('?')[0]))
-            .filter(h => !h.endsWith('/'))
-            .filter(h => /\.(mp3|wav|ogg|m4a)$/i.test(h))
-            .map(h => h.replace(/^.*[\\/]/, ''));
-
-        const uniqueFiles = Array.from(new Set(files));
-
-        playlist = uniqueFiles.map(fn => {
-            const name = fn.replace(/\.[^/.]+$/, '');
-            const parts = name.split(' - ');
-            const title = parts[0] ? parts[0].trim() : name;
-            const artist = parts[1] ? parts[1].trim() : 'Unknown';
-            return { title, artist, src: `music/${encodeURIComponent(fn)}` };
-        });
-
-        if (playlist.length > 0) {
-            musicPlayer.src = playlist[0].src;
-            songTitle.textContent = playlist[0].title;
-            songArtist.textContent = playlist[0].artist;
-            // check range support for first track
-            checkRangeSupport(musicPlayer.src).then(r => console.log('Range check result for first track', r));
-        } else {
-            console.warn('No audio files found in music/ directory');
-        }
-    } catch (err) {
-        console.error('Failed to load music directory listing:', err);
+    if (playlist.length > 0) {
+      currentSongIndex = 0;
+      musicPlayer.src = playlist[0].src;
+      songTitle.textContent = playlist[0].title;
+      songArtist.textContent = playlist[0].artist;
+    } else {
+      console.warn('music/playlist.json loaded but empty');
     }
+  } catch (err) {
+    console.error('Failed to load music/playlist.json:', err);
+  }
 }
 
-// Load playlist by scanning the music directory on the server
-loadPlaylistFromDirectory();
+// Load playlist from music/playlist.json (works locally and on static hosts)
+loadPlaylistFromJson();
+
 
 // --- Diagnostics: check server range support for a tracked URL ---
 async function checkRangeSupport(url) {
