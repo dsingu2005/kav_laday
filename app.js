@@ -127,30 +127,66 @@ let playlist = [];
 async function loadPlaylistFromDirectory() {
     try {
         const resp = await fetch('music/');
-        if (!resp.ok) throw new Error('Could not fetch music/ directory listing');
-        const html = await resp.text();
+        let files = [];
+        if (resp.ok) {
+            const html = await resp.text();
 
-        // Parse the HTML directory listing and extract file hrefs
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const anchors = Array.from(doc.querySelectorAll('a'));
-        const files = anchors
-            .map(a => a.getAttribute('href'))
-            .filter(Boolean)
-            .map(h => decodeURIComponent(h.split('?')[0]))
-            .filter(h => !h.endsWith('/'))
-            .filter(h => /\.(mp3|wav|ogg|m4a)$/i.test(h))
-            .map(h => h.replace(/^.*[\\/]/, ''));
+            // Parse the HTML directory listing and extract file hrefs (works on servers that allow indexing)
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const anchors = Array.from(doc.querySelectorAll('a'));
+            files = anchors
+                .map(a => a.getAttribute('href'))
+                .filter(Boolean)
+                .map(h => decodeURIComponent(h.split('?')[0]))
+                .filter(h => !h.endsWith('/'))
+                .filter(h => /\.(mp3|wav|ogg|m4a)$/i.test(h))
+                .map(h => h.replace(/^.*[\\/]/, ''));
+        }
+
+        // If no files found via directory listing (GitHub Pages doesn't expose directory indexes), try a static JSON manifest
+        if (!files || files.length === 0) {
+            try {
+                const jresp = await fetch('music/playlist.json');
+                if (jresp.ok) {
+                    const manifest = await jresp.json();
+                    files = manifest.map(item => decodeURIComponent(item.src.replace(/^music\//, '')));
+                }
+            } catch (e) {
+                console.warn('No manifest found or failed to parse playlist.json', e);
+            }
+        }
 
         const uniqueFiles = Array.from(new Set(files));
 
-        playlist = uniqueFiles.map(fn => {
-            const name = fn.replace(/\.[^/.]+$/, '');
-            const parts = name.split(' - ');
-            const title = parts[0] ? parts[0].trim() : name;
-            const artist = parts[1] ? parts[1].trim() : 'Unknown';
-            return { title, artist, src: `music/${encodeURIComponent(fn)}` };
-        });
+        // If a JSON manifest exists, prefer its metadata
+        try {
+            const jresp2 = await fetch('music/playlist.json');
+            if (jresp2.ok) {
+                const manifest = await jresp2.json();
+                playlist = manifest.map(item => ({
+                    title: item.title || item.name || item.src.replace(/\.[^/.]+$/, ''),
+                    artist: item.artist || 'Unknown',
+                    src: item.src.startsWith('music/') ? item.src : `music/${item.src}`
+                }));
+            } else {
+                playlist = uniqueFiles.map(fn => {
+                    const name = fn.replace(/\.[^/.]+$/, '');
+                    const parts = name.split(' - ');
+                    const title = parts[0] ? parts[0].trim() : name;
+                    const artist = parts[1] ? parts[1].trim() : 'Unknown';
+                    return { title, artist, src: `music/${encodeURIComponent(fn)}` };
+                });
+            }
+        } catch (e) {
+            playlist = uniqueFiles.map(fn => {
+                const name = fn.replace(/\.[^/.]+$/, '');
+                const parts = name.split(' - ');
+                const title = parts[0] ? parts[0].trim() : name;
+                const artist = parts[1] ? parts[1].trim() : 'Unknown';
+                return { title, artist, src: `music/${encodeURIComponent(fn)}` };
+            });
+        }
 
         if (playlist.length > 0) {
             musicPlayer.src = playlist[0].src;
