@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Will You Be My Valentine? 💕</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Music Controls -->
+    <button id="muteToggle" class="mute-toggle" aria-label="Toggle Music">
+        <span class="mute-icon">🔊</span>
+    </button>
+
+    <!-- Sound Prompt Overlay -->
+    <div id="soundPrompt" class="sound-prompt hidden">
+        <div class="sound-prompt-content">
+            <p>Tap to enable sound 🎵</p>
+        </div>
+    </div>
+
+    <!-- Music Player Bar -->
+    <div id="musicPlayerBar" class="music-player-bar">
+        <div class="player-progress-container">
+            <input type="range" id="progressBar" class="progress-bar" min="0" max="100" value="0">
+            <div class="time-display">
+                <span id="currentTime">0:00 / 0:00</span>
+            </div>
+        </div>
+        <div class="player-info">
+            <div class="song-info">
+                <div id="songTitle" class="song-title">Ishq Sufiyana</div>
+                <div id="songArtist" class="song-artist">Emraan Hashmi, Vidya Balan, Kamal Khan</div>
+            </div>
+            <div class="player-controls">
+                <button id="prevBtn" class="control-btn">⏮</button>
+                <button id="playPauseBtn" class="control-btn play-pause-btn">▶️</button>
+                <button id="nextBtn" class="control-btn">⏭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Playlist note removed (now shown as transient popup only) -->
+
+    <!-- Main Container -->
+    <div class="container">
+        
+        <!-- Section 1: Intro + Letter -->
+        <section id="intro" class="section intro-section">
+            <div class="intro-content">
+                <h1 class="fade-in">Sorry for baiting you…</h1>
+                <p class="fade-in delay-1">I promise though, this is worth it. Scroll down</p>
+                <div class="scroll-indicator fade-in delay-2">
+                    <span>↓</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Letter Content -->
+        <section id="letter" class="section letter-section">
+            <div class="letter-content reveal">
+                <div class="letter-header">
+                    <h2>Dear Kavita,</h2>
+                </div>
+                <div class="letter-body">
+                    <p>From the moment we first connected, I knew there was something special about you. Every moment we've shared has made my world brighter. Even throughout the challenges, your presence has been a constant source of comfort and joy.</p>
+                    <p>What started as a simple interaction has blossomed into something I treasure deeply. You've brought so much warmth and meaning into my life and for that, I love you, Kavita.</p>
+                    <p>I wanted to take this opportunity to celebrate our journey together...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Timeline -->
+        <section id="timeline" class="section timeline-section">
+            <div class="timeline-header reveal">
+                <h2>Our Story So Far</h2>
+            </div>
+            
+            <div class="timeline">
+                <div class="timeline-item reveal">
+                    <div class="timeline-date">May 20, 2024</div>
+                    <div class="timeline-content">
+                        <h3>First Interaction</h3>
+                        <p>The day our paths first crossed 💫</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item reveal">
+                    <div class="timeline-date">June 18, 2024</div>
+                    <div class="timeline-content">
+                        <h3>First Text Message</h3>
+                        <p>Our conversation began 💬</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item reveal">
+                    <div class="timeline-date">June 25, 2024</div>
+                    <div class="timeline-content">
+                        <h3>First Phone Call</h3>
+                        <p>74 magical seconds lay the path for the many more to come</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item reveal">
+                    <div class="timeline-date">Apr 6, 2025</div>
+                    <div class="timeline-content">
+                        <h3>First Confession</h3>
+                        <p>When we confessed our feelings 💕</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item reveal">
+                    <div class="timeline-date">Feb 14, 2025</div>
+                    <div class="timeline-content">
+                        <h3>Our First Valentine's Day</h3>
+                        <p>Celebrating our love together 💝</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats reveal">
+                <div class="stat-item">
+                    <div class="stat-number">2,635</div>
+                    <div class="stat-label">minutes of wonderful calls with you</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">109</div>
+                    <div class="stat-label">amazing messages shared over iMessage</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">456</div>
+                    <div class="stat-label">hours of video calls together</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Proposal -->
+        <section id="proposal" class="section proposal-section">
+            <div class="proposal-content reveal">
+                <h2 class="proposal-question">Kavita, will you be my Valentine?</h2>
+                
+                <div class="proposal-buttons">
+                    <button id="yesBtn" class="btn btn-yes">Yes! 💕</button>
+                    <button id="noBtn" class="btn btn-no">No</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Restaurants -->
+        <section id="restaurants" class="section restaurants-section hidden">
+            <div class="restaurants-content reveal">
+                <h2>Let's Plan Our Date! 🍽️</h2>
+                
+                <!-- Step 1: Comfort Spots or Something New -->
+                <div id="flavorChoice" class="choice-container">
+                    <p class="choice-prompt">What are you in the mood for?</p>
+                    <div class="choice-buttons">
+                        <button class="btn btn-choice" data-flavor="comfort">Comfort Spots 🏠</button>
+                        <button class="btn btn-choice" data-flavor="new">Something New ✨</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Restaurant Selection (initially hidden) -->
+                <div id="restaurantChoice" class="choice-container hidden">
+                    <!-- Comfort Spots -->
+                    <div id="comfortOptions" class="restaurant-option hidden">
+                        <p class="choice-prompt">Choose your favorite comfort spot:</p>
+                        <div class="restaurant-buttons">
+                            <button class="btn btn-restaurant" data-restaurant="taj">
+                                <div class="restaurant-name">Taj Stamford</div>
+                                <a href="https://tajstamford.com/menu" target="_blank" class="menu-link" onclick="event.stopPropagation()">View Menu</a>
+                            </button>
+                            <button class="btn btn-restaurant" data-restaurant="xan-niang">
+                                <div class="restaurant-name">Xan Niang Dumpling Spot 🥟</div>
+                                <a href="https://nanxiangxiaolongbao.com/menu/" target="_blank" class="menu-link" onclick="event.stopPropagation()">View Menu</a>
+                            </button>
+                            <button class="btn btn-restaurant" data-restaurant="barcelona">
+                                <div class="restaurant-name">Barcelona Wine Bar 🍷</div>
+                                <a href="https://barcelonawinebar.com/media/2-7-26-Brunch-Menu-Stamford.pdf" target="_blank" class="menu-link" onclick="event.stopPropagation()">View Menu</a>
+                            </button>
+                            <button class="btn btn-restaurant btn-none" data-restaurant="none">Don't like any 😢</button>
+                        </div>
+                    </div>
+
+                    <!-- Something New -->
+                    <div id="newOptions" class="restaurant-option hidden">
+                        <p class="choice-prompt">Try something new:</p>
+                        <div class="restaurant-buttons">
+                            <button class="btn btn-restaurant" data-restaurant="mecha">
+                                <div class="restaurant-name">Mecha Noodle Bar 🍜</div>
+                                <a href="https://www.mechanoodlebar.com/menu" target="_blank" class="menu-link" onclick="event.stopPropagation()">View Menu</a>
+                            </button>
+                            <button class="btn btn-restaurant" data-restaurant="cka-ka-qellu">
+                                <div class="restaurant-name">Çka Ka Qëllu 🍴</div>
+                                <a href="https://ckakaqelluct.com/#our-menu" target="_blank" class="menu-link" onclick="event.stopPropagation()">View Menu</a>
+                            </button>
+                            <button class="btn btn-restaurant btn-none" data-restaurant="none">Don't like any 😢</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirmation -->
+                <div id="restaurantConfirmation" class="confirmation hidden">
+                    <p class="confirmation-text"></p>
+                    <button id="playGameBtn" class="btn btn-primary">You have worked hard, here is a reward! 🎮</button>
+                </div>
+
+                <!-- Sad GIF (for "don't like any") -->
+                <div id="sadGif" class="sad-gif hidden">
+                    <img src="assets/sad.gif" alt="Sad face">
+                    <p>Maybe we can find something else... 🥺</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Flappy Bird Game -->
+        <section id="game" class="section game-section hidden">
+            <div class="game-content reveal">
+                <h2>Flappy Bird Challenge 💕</h2>
+                <p style="text-align: center; margin-bottom: 20px; color: var(--text-light);">Tap or click to make the heart fly! Avoid the pipes!</p>
+                <div class="game-info">
+                    <div class="score-display">
+                        <span>Score: <span id="currentScore">0</span></span>
+                        <span>High Score: <span id="highScore">0</span></span>
+                    </div>
+                </div>
+                <div id="gameContainer" class="game-container">
+                    <canvas id="gameCanvas"></canvas>
+                    <div id="gameStartScreen" class="game-overlay">
+                        <button id="startGameBtn" class="btn btn-primary btn-large">Start Game</button>
+                    </div>
+                    <div id="gameOverScreen" class="game-overlay hidden">
+                        <h3>Game Over!</h3>
+                        <p>Score: <span id="finalScore">0</span></p>
+                        <button id="restartGameBtn" class="btn btn-primary">Play Again</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Audio Player (hidden) -->
+    <audio id="musicPlayer">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="app.js?v=2"></script>
+</body>
+</html>
