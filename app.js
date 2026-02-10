@@ -11,15 +11,6 @@
     }
 })();
 
-// Register Service Worker for audio caching
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then((reg) => {
-        console.log('✅ Service Worker registered for caching', reg);
-    }).catch((err) => {
-        console.warn('Service Worker registration failed:', err);
-    });
-}
-
 async function safePlay() {
     try {
         await musicPlayer.play();
@@ -136,73 +127,30 @@ let playlist = [];
 async function loadPlaylistFromDirectory() {
     try {
         const resp = await fetch('music/');
-        let files = [];
-        if (resp.ok) {
-            const html = await resp.text();
+        if (!resp.ok) throw new Error('Could not fetch music/ directory listing');
+        const html = await resp.text();
 
-            // Parse the HTML directory listing and extract file hrefs (works on servers that allow indexing)
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const anchors = Array.from(doc.querySelectorAll('a'));
-            files = anchors
-                .map(a => a.getAttribute('href'))
-                .filter(Boolean)
-                .map(h => decodeURIComponent(h.split('?')[0]))
-                .filter(h => !h.endsWith('/'))
-                .filter(h => /\.(mp3|wav|ogg|m4a)$/i.test(h))
-                .map(h => h.replace(/^.*[\\/]/, ''));
-        }
-
-        // If no files found via directory listing (GitHub Pages doesn't expose directory indexes), try a static JSON manifest
-        if (!files || files.length === 0) {
-            try {
-                const jresp = await fetch('music/playlist.json');
-                if (jresp.ok) {
-                    const manifest = await jresp.json();
-                    files = manifest.map(item => decodeURIComponent(item.src.replace(/^music\//, '')));
-                }
-            } catch (e) {
-                console.warn('No manifest found or failed to parse playlist.json', e);
-            }
-        }
+        // Parse the HTML directory listing and extract file hrefs
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const anchors = Array.from(doc.querySelectorAll('a'));
+        const files = anchors
+            .map(a => a.getAttribute('href'))
+            .filter(Boolean)
+            .map(h => decodeURIComponent(h.split('?')[0]))
+            .filter(h => !h.endsWith('/'))
+            .filter(h => /\.(mp3|wav|ogg|m4a)$/i.test(h))
+            .map(h => h.replace(/^.*[\\/]/, ''));
 
         const uniqueFiles = Array.from(new Set(files));
 
-        // If a JSON manifest exists, prefer its metadata
-        try {
-            const jresp2 = await fetch('music/playlist.json');
-            if (jresp2.ok) {
-                const manifest = await jresp2.json();
-                playlist = manifest.map(item => {
-                    let src = item.src || '';
-                    // if src is an absolute URL (http/https or //), leave as-is
-                    if (!/^https?:\/\//i.test(src) && !src.startsWith('//')) {
-                        if (!src.startsWith('music/')) src = `music/${src}`;
-                    }
-                    return {
-                        title: item.title || item.name || src.replace(/\.[^/.]+$/, ''),
-                        artist: item.artist || 'Unknown',
-                        src
-                    };
-                });
-            } else {
-                playlist = uniqueFiles.map(fn => {
-                    const name = fn.replace(/\.[^/.]+$/, '');
-                    const parts = name.split(' - ');
-                    const title = parts[0] ? parts[0].trim() : name;
-                    const artist = parts[1] ? parts[1].trim() : 'Unknown';
-                    return { title, artist, src: `music/${encodeURIComponent(fn)}` };
-                });
-            }
-        } catch (e) {
-            playlist = uniqueFiles.map(fn => {
-                const name = fn.replace(/\.[^/.]+$/, '');
-                const parts = name.split(' - ');
-                const title = parts[0] ? parts[0].trim() : name;
-                const artist = parts[1] ? parts[1].trim() : 'Unknown';
-                return { title, artist, src: `music/${encodeURIComponent(fn)}` };
-            });
-        }
+        playlist = uniqueFiles.map(fn => {
+            const name = fn.replace(/\.[^/.]+$/, '');
+            const parts = name.split(' - ');
+            const title = parts[0] ? parts[0].trim() : name;
+            const artist = parts[1] ? parts[1].trim() : 'Unknown';
+            return { title, artist, src: `music/${encodeURIComponent(fn)}` };
+        });
 
         if (playlist.length > 0) {
             musicPlayer.src = playlist[0].src;
@@ -594,17 +542,7 @@ musicPlayer.addEventListener('loadedmetadata', () => {
 });
 
 musicPlayer.addEventListener('error', (e) => {
-    const err = e.target.error;
-    let msg = 'Unknown audio error';
-    if (err) {
-        msg = `Audio error code ${err.code}: `;
-        if (err.code === 1) msg += 'MEDIA_ERR_ABORTED';
-        else if (err.code === 2) msg += 'MEDIA_ERR_NETWORK (Network issue / CORS / unreachable)';
-        else if (err.code === 3) msg += 'MEDIA_ERR_DECODE (Invalid audio format or corrupted)';
-        else if (err.code === 4) msg += 'MEDIA_ERR_SRC_NOT_SUPPORTED (Format not supported or URL invalid)';
-    }
-    console.error(msg, 'src:', musicPlayer.src);
-    showToast('Audio error: ' + msg, 5000);
+    console.error('Audio error:', e);
 });
 
 // // Auto-advance to next song (single listener)

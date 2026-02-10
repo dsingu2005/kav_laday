@@ -1,12 +1,14 @@
 // Service Worker for caching audio tracks
-const CACHE_NAME = 'kav-laday-audio-v1';
+const CACHE_NAME = 'kav-laday-audio-v2';
 
 // Listen for fetch events and cache audio files
 self.addEventListener('fetch', (e) => {
     const url = new URL(e.request.url);
     
     // Only cache Dropbox audio URLs
-    if (url.hostname === 'www.dropbox.com' && e.request.url.includes('.mp3')) {
+    if ((url.hostname.endsWith('r2.dev') ||
+   url.hostname === 'www.dropbox.com') &&
+  e.request.url.includes('.mp3')) {
         e.respondWith(
             caches.open(CACHE_NAME).then((cache) => {
                 return cache.match(e.request).then((response) => {
